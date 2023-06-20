@@ -59,8 +59,8 @@ const UsersList: React.FC<any> = ({
                     okText: 'Xác nhận',
                     okType: 'danger',
                     cancelText: 'Huỷ',
-                    onOk() {},
-                    onCancel() {},
+                    onOk() { },
+                    onCancel() { },
                 });
                 return;
             }
@@ -77,6 +77,20 @@ const UsersList: React.FC<any> = ({
     };
 
     const columns: ColumnsType<UserType> = [
+        {
+            title: '#',
+            dataIndex: 'photos',
+            fixed: 'left',
+            key: 'photos',
+            width: '60px',
+            render(value, record, index) {
+                const isImage = Array.isArray(value) && value?.length > 0
+                if (isImage) {
+                    return <img src={value[0]} style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
+                }
+                return ""
+            }
+        },
         {
             title: 'Tên sản phẩm',
             dataIndex: 'name',
@@ -121,20 +135,6 @@ const UsersList: React.FC<any> = ({
                     return value + ' %';
                 }
                 return '--';
-            },
-        },
-
-        {
-            title: 'Mô tả',
-            dataIndex: 'description',
-            key: 'description',
-            fixed: 'right',
-            render(value, _record, _index) {
-                return (
-                    <Space>
-                        <p className='!tw-line-clamp-3'>{value}</p>
-                    </Space>
-                );
             },
         },
         {
