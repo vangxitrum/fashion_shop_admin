@@ -7,6 +7,13 @@ import { Fragment, useEffect, useState } from 'react';
 import DetailProductTable from './DetailProductTable';
 import { useGlobalsContext } from 'src/contexts';
 import { SystemServices } from 'src/services';
+import SelectBrand from './SelectBrand'
+import SelectGender from './SelectGender';
+import {
+    DeleteOutlined,
+    PlusOutlined
+} from '@ant-design/icons';
+import { addPhotoProduct, deleteProductPhotos } from 'src/services/product.services';
 const { confirm } = Modal;
 const { Text, Title } = Typography;
 const items: MenuProps['items'] = [
@@ -42,7 +49,7 @@ const DetailProduct = ({
 
     const saveData = async () => {
         try {
-        } catch (error) {}
+        } catch (error) { }
     };
 
     const handleSaveInfo = () => {
@@ -52,8 +59,8 @@ const DetailProduct = ({
             okText: 'Xác nhận',
             okType: 'danger',
             cancelText: 'Huỷ',
-            onOk() {},
-            onCancel() {},
+            onOk() { },
+            onCancel() { },
         });
     };
 
@@ -81,6 +88,42 @@ const DetailProduct = ({
             setLoading(true);
         }
     }, [productDetailId]);
+
+    const deletePhoto = (item) => {
+        deleteProductPhotos(item, productDetailId).then(res => {
+            setInfo(prev => {
+                const photos = prev.photos.filter(i => i !== item)
+                return { ...prev, photos }
+            })
+            globalActions.setNotification({
+                type: 'success',
+                title: `Đã xóa hình ảnh thành công`,
+            });
+        }).catch(err => {
+            globalActions.setNotification({
+                type: 'error',
+                title: `Tải chi tiết sản phẩm thất bại`,
+                message: `${err}`,
+            });
+        })
+    }
+
+    const onPhotoFile = (event) => {
+        const datas = event.target.files
+        addPhotoProduct(productDetailId, datas).then(res => {
+            globalActions.setNotification({
+                type: 'success',
+                title: `Tải hình ảnh thành công`,
+                message: `Bạn đã thêm thành công ${datas?.length} hình`,
+            });
+        }).catch(error => {
+            globalActions.setNotification({
+                type: 'error',
+                title: `Tải chi tiết sản phẩm thất bại`,
+                message: `${error}`,
+            });
+        })
+    }
 
     if (!productDetailId) return null;
 
@@ -117,8 +160,44 @@ const DetailProduct = ({
                                     </Space>
                                 </div>
                             </Col>
-                            <Col span={16}>Info</Col>
-                            <Col span={8}>Images</Col>
+                            <Col span={12}>
+                                <Row className='tw-mb-2'>
+                                    <Col className='tw-flex tw-flex-col tw-pr-1'>
+                                        <label className="tw-text-black tw-font-bold">Tên sản phẩm</label>
+                                        <input className='tw-h-8 !tw-outline-none tw-border tw-px-2 tw-rounded' placeholder='Tên sản phẩm' />
+                                    </Col>
+                                    <Col className='tw-flex tw-flex-col tw-pl-1'>
+                                        <label className="tw-text-black tw-font-bold">Giá bán</label>
+                                        <input className='tw-h-8 !tw-outline-none tw-border tw-px-2 tw-rounded' placeholder='Giá bán' type='number' />
+                                    </Col>
+                                </Row>
+                                <Row className='tw-flex'>
+                                    <Col className='tw-flex tw-flex-col tw-pr-1 '>
+                                        <label className="tw-text-black tw-font-bold">Thương hiệu</label>
+                                        <SelectBrand value={info.brand} onSelect={val => setInfo(prev => ({ ...prev, brand: val }))} />
+                                    </Col>
+                                    <Col className='tw-flex tw-flex-col tw-pl-1'>
+                                        <label className="tw-text-black tw-font-bold">Giới tính</label>
+                                        <SelectGender value={info.gender} onSelect={val => setInfo(prev => ({ ...prev, gender: val }))} />
+                                    </Col>
+                                </Row>
+                            </Col>
+                            <Col span={8} className='tw-flex tw-flex-row tw-flex-wrap'>
+                                {info?.photos?.map((item, index) => {
+                                    return <div key={"item-image" + index} className='tw-border tw-rounded-sm tw-w-16 tw-h-16 tw-mr-2 relative'>
+                                        <div onClick={() => deletePhoto(item)} className='tw-w-5 tw-h-5 tw-flex tw-items-center tw-justify-center tw-cursor-pointer hover:tw-shadow tw-rounded-full tw-absolute tw-bg-white'>
+                                            <DeleteOutlined color='red' className='tw-text-red-500' />
+                                        </div>
+                                        <img className='tw-w-full tw-h-full tw-object-corver' src={item} />
+                                    </div>
+                                })}
+                                <div className='tw-border tw-rounded-sm tw-w-16 tw-h-16 tw-mr-2 relative'>
+                                    <label htmlFor='form-input-file-product' className='tw-w-full tw-h-full tw-flex tw-items-center tw-justify-center tw-cursor-pointer'>
+                                        <PlusOutlined className='tw-text-xl tw-text-gray-500' />
+                                    </label>
+                                    <input onChange={onPhotoFile} multiple type='file' className=' tw-hidden' id='form-input-file-product' />
+                                </div>
+                            </Col>
                         </Row>
                         <DetailProductTable
                             detailInfo={info?.product_quantities || []}

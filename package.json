@@ -24,7 +24,7 @@
         "typescript": "^4.4.2"
     },
     "scripts": {
-        "start": "react-scripts start --mode=localhost",
+        "start": "env-cmd -f .env.localhost react-scripts start --mode=localhost",
         "dev": "env-cmd -f .env.development react-scripts build --mode=production",
         "build": "env-cmd -f .env.production react-scripts build --mode=production",
         "test": "react-scripts test",
