@@ -1,0 +1,10 @@
+public: public resource: file index, icon, ...
+src:
+    assets: local statics resource: image, ....
+    components: include project components.
+    pages: include all project pages.
+    utils: include tools: calc functions, formart functions, ...
+    hooks: include custom hooks.
+    contexts: include project contexts ( context can be used instead of redux ).
+    services: include project apis.
+    types: define common type, use for typescript.
