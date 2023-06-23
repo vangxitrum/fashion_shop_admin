@@ -27,15 +27,24 @@ export const deleteProductPhotos = (photo_url: string, product_id: string) => {
     })
 }
 
-export const addPhotoProduct = (id: string, files: any[]) => {
+export const addPhotoProduct = (id: string, files: any) => {
     const formData = new FormData()
-    files.map(item => {
-        formData.append('photo_files', item)
-    })
+    files.forEach(element => {
+        formData.append('photo_files[]', element)
+    });
+
     return instance.post(`product_photos/upload/${id}`, formData, {
         headers: {
             Authorization: authHeader(),
             'Content-Type': 'multipart/form-data'
+        },
+    })
+}
+
+export const updateProduct = (params: any) => {
+    return instance.put(`/product`, params, {
+        headers: {
+            Authorization: authHeader(),
         },
     })
 }

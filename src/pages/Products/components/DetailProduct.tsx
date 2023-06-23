@@ -13,7 +13,7 @@ import {
     DeleteOutlined,
     PlusOutlined
 } from '@ant-design/icons';
-import { addPhotoProduct, deleteProductPhotos } from 'src/services/product.services';
+import { addPhotoProduct, deleteProductPhotos, updateProduct } from 'src/services/product.services';
 const { confirm } = Modal;
 const { Text, Title } = Typography;
 const items: MenuProps['items'] = [
@@ -48,8 +48,40 @@ const DetailProduct = ({
     const [info, setInfo] = useState<any>(null);
 
     const saveData = async () => {
-        try {
-        } catch (error) { }
+        const dataForm = {
+            "brand": info.brand,
+            "description": info.description,
+            "discount_percent": info.discount_percent,
+            "gender": info.gender,
+            "id": productDetailId,
+            "name": info.name,
+            "price": info.price,
+            "product_quantities": info.product_quantities.map((item, index) => {
+                return {
+                    "color": item.color,
+                    "detail_id": item.detail_id,
+                    "id": item.id,
+                    "quantity": parseInt(item.quantity),
+                    "size": item.size
+                }
+            }),
+            "tags": info.tags,
+            "types": info.types
+        }
+        updateProduct(dataForm).then(res => {
+            onClose()
+            globalActions.setNotification({
+                type: 'success',
+                title: `Cập nhật sản phẩm thành công`,
+                message: `Cập nhật sản phẩm thành công`,
+            });
+        }).catch(err => {
+            globalActions.setNotification({
+                type: 'error',
+                title: `Cập nhật sản phẩm thất bại`,
+                message: `${err}`,
+            });
+        })
     };
 
     const handleSaveInfo = () => {
@@ -59,7 +91,7 @@ const DetailProduct = ({
             okText: 'Xác nhận',
             okType: 'danger',
             cancelText: 'Huỷ',
-            onOk() { },
+            onOk() { saveData() },
             onCancel() { },
         });
     };
@@ -102,15 +134,21 @@ const DetailProduct = ({
         }).catch(err => {
             globalActions.setNotification({
                 type: 'error',
-                title: `Tải chi tiết sản phẩm thất bại`,
+                title: `Xóa sản phẩm thất bại`,
                 message: `${err}`,
             });
         })
     }
 
-    const onPhotoFile = (event) => {
-        const datas = event.target.files
+    const onPhotoFile = ({
+        currentTarget: { files },
+    }: React.ChangeEvent<HTMLInputElement>) => {
+        const datas = []
+        for (let index = 0; index < files.length; index++) {
+            datas.push(files[index])
+        }
         addPhotoProduct(productDetailId, datas).then(res => {
+            setInfo(prev => ({ ...prev, photos: res.data }))
             globalActions.setNotification({
                 type: 'success',
                 title: `Tải hình ảnh thành công`,
@@ -164,11 +202,11 @@ const DetailProduct = ({
                                 <Row className='tw-mb-2'>
                                     <Col className='tw-flex tw-flex-col tw-pr-1'>
                                         <label className="tw-text-black tw-font-bold">Tên sản phẩm</label>
-                                        <input className='tw-h-8 !tw-outline-none tw-border tw-px-2 tw-rounded' placeholder='Tên sản phẩm' />
+                                        <input value={info.name || ""} onChange={e => setInfo(prev => ({ ...prev, name: e.target.value }))} className='tw-h-8 !tw-outline-none tw-border tw-px-2 tw-rounded' placeholder='Tên sản phẩm' />
                                     </Col>
                                     <Col className='tw-flex tw-flex-col tw-pl-1'>
                                         <label className="tw-text-black tw-font-bold">Giá bán</label>
-                                        <input className='tw-h-8 !tw-outline-none tw-border tw-px-2 tw-rounded' placeholder='Giá bán' type='number' />
+                                        <input value={info.price || ""} onChange={e => setInfo(prev => ({ ...prev, price: e.target.value }))} className='tw-h-8 !tw-outline-none tw-border tw-px-2 tw-rounded' placeholder='Giá bán' type='number' />
                                     </Col>
                                 </Row>
                                 <Row className='tw-flex'>
@@ -184,14 +222,14 @@ const DetailProduct = ({
                             </Col>
                             <Col span={8} className='tw-flex tw-flex-row tw-flex-wrap'>
                                 {info?.photos?.map((item, index) => {
-                                    return <div key={"item-image" + index} className='tw-border tw-rounded-sm tw-w-16 tw-h-16 tw-mr-2 relative'>
+                                    return <div key={"item-image" + index} className='tw-border tw-rounded-sm tw-w-16 tw-h-16 tw-mr-2 relative tw-mb-2'>
                                         <div onClick={() => deletePhoto(item)} className='tw-w-5 tw-h-5 tw-flex tw-items-center tw-justify-center tw-cursor-pointer hover:tw-shadow tw-rounded-full tw-absolute tw-bg-white'>
                                             <DeleteOutlined color='red' className='tw-text-red-500' />
                                         </div>
                                         <img className='tw-w-full tw-h-full tw-object-corver' src={item} />
                                     </div>
                                 })}
-                                <div className='tw-border tw-rounded-sm tw-w-16 tw-h-16 tw-mr-2 relative'>
+                                <div className='tw-border tw-rounded-sm tw-w-16 tw-h-16 tw-mr-2 relative tw-mb-2'>
                                     <label htmlFor='form-input-file-product' className='tw-w-full tw-h-full tw-flex tw-items-center tw-justify-center tw-cursor-pointer'>
                                         <PlusOutlined className='tw-text-xl tw-text-gray-500' />
                                     </label>
@@ -201,7 +239,44 @@ const DetailProduct = ({
                         </Row>
                         <DetailProductTable
                             detailInfo={info?.product_quantities || []}
+                            onChangeData={(data) => {
+                                setInfo(prev => ({ ...prev, product_quantities: data }))
+                            }}
                         />
+                        <div>
+                            <label className=' tw-font-bold'>Mô tả</label>
+                            <textarea value={info.description || ""} onChange={e => setInfo(prev => ({ ...prev, description: e.target.value }))} placeholder='Mô tả' className=' tw-border tw-w-full !tw-outline-none tw-p-2 tw-rounded' rows={5} />
+                        </div>
+                        <div className='tw-flex tw-flex-row tw-flex-wrap'>
+                            {["HOT", "SALE", "NEW"].map((item, index) => {
+                                const active = info.tags && info.tags.find(i => i === item)
+                                return (
+                                    <div
+                                        onClick={() => {
+                                            if (active) {
+                                                setInfo(prev => {
+                                                    const tags = prev.tags.filter(i => i !== item)
+                                                    return {
+                                                        ...prev,
+                                                        tags: tags
+                                                    }
+                                                })
+                                            } else {
+                                                setInfo(prev => ({ ...prev, tags: Array.isArray(prev.tags) ? [...prev.tags, item] : [item] }))
+                                            }
+                                        }}
+                                        key={`item-tags-${index}`} className={`tw-px-4 tw-py-2 tw-border tw-rounded tw-mr-2 ${active ? " tw-bg-blue-400 tw-text-white tw-cursor-pointer" : ""}`}>
+                                        <span>{item}</span>
+                                    </div>
+                                )
+                            })}
+                        </div>
+                        <div className='tw-mt-2 tw-flex tw-flex-col'>
+                            <label className='tw-font-bold'>Nhập loại sản phẩm</label>
+                            <input
+                                className='tw-border tw-px-2  tw-h-8 tw-rounded'
+                                placeholder='Nhập loại' value={info.types[0] || ""} onChange={e => setInfo(prev => ({ ...prev, types: [e.target.value] }))} />
+                        </div>
                     </div>
                 )}
             </div>

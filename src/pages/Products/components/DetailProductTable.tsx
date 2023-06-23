@@ -130,7 +130,7 @@ const EditableCell: React.FC<EditableCellProps> = ({
                 ) : dataIndex.toString() === 'price' ? (
                     <InputNumber className='tw-w-full' min={0} onBlur={save} />
                 ) : (
-                    <Input ref={inputRef} onPressEnter={save} onBlur={save} />
+                    <Input ref={inputRef} onPressEnter={save} className='abcxyz' onBlur={save} />
                 )}
             </Form.Item>
         ) : (
@@ -158,10 +158,19 @@ interface DataType {
 
 type ColumnTypes = Exclude<EditableTableProps['columns'], undefined>;
 
-const DetailProductTable = ({ detailInfo }: { detailInfo: any[] }) => {
+const DetailProductTable = ({ detailInfo, onChangeData }: { detailInfo: any[], onChangeData?: (val: any[]) => void }) => {
     const [dataSource, setDataSource] = useState<DataType[]>(detailInfo || []);
-
+    const timer = useRef<any>(null)
     const [count, setCount] = useState(2);
+
+    useEffect(() => {
+        if (timer.current) {
+            clearTimeout(timer.current)
+        }
+        timer.current = setTimeout(() => {
+            onChangeData(dataSource)
+        }, 50)
+    }, [dataSource])
 
     const handleDelete = (key: React.Key) => {
         const newData = dataSource.filter((item) => item.key !== key);
@@ -172,47 +181,41 @@ const DetailProductTable = ({ detailInfo }: { detailInfo: any[] }) => {
         editable?: boolean;
         dataIndex: string;
     })[] = [
-        {
-            title: 'Size - Kích thước',
-            dataIndex: 'size',
-            key: 'size',
-            editable: true,
-        },
-        {
-            title: 'Color - Màu sắc',
-            dataIndex: 'color',
-            key: 'color',
-            editable: true,
-        },
-        {
-            title: 'Quantity - Số lượng',
-            dataIndex: 'quantity',
-            key: 'quantity',
-            editable: true,
-        },
-        {
-            title: 'Giá tiền',
-            dataIndex: 'price',
-            key: 'price',
-            editable: true,
-        },
-        {
-            title: '#',
-            dataIndex: '#',
-            width: 120,
+            {
+                title: 'Size - Kích thước',
+                dataIndex: 'size',
+                key: 'size',
+                editable: true,
+            },
+            {
+                title: 'Color - Màu sắc',
+                dataIndex: 'color',
+                key: 'color',
+                editable: true,
+            },
+            {
+                title: 'Quantity - Số lượng',
+                dataIndex: 'quantity',
+                key: 'quantity',
+                editable: true,
+            },
+            {
+                title: '#',
+                dataIndex: '#',
+                width: 120,
 
-            align: 'center',
-            render: (_, record: { key: React.Key }) =>
-                dataSource.length >= 1 ? (
-                    <Popconfirm
-                        title='Xoá chi tiết này?'
-                        onConfirm={() => handleDelete(record.key)}
-                    >
-                        <Button danger>Xoá</Button>
-                    </Popconfirm>
-                ) : null,
-        },
-    ];
+                align: 'center',
+                render: (_, record: { key: React.Key }) =>
+                    dataSource.length >= 1 ? (
+                        <Popconfirm
+                            title='Xoá chi tiết này?'
+                            onConfirm={() => handleDelete(record.key)}
+                        >
+                            <Button danger>Xoá</Button>
+                        </Popconfirm>
+                    ) : null,
+            },
+        ];
 
     const handleAdd = () => {
         const newData: DataType = {
@@ -266,7 +269,7 @@ const DetailProductTable = ({ detailInfo }: { detailInfo: any[] }) => {
     });
 
     return (
-        <Row gutter={24}>
+        <Row gutter={24} className='tw-mt-4'>
             <Col span={24}>
                 <div className='tw-flex tw-items-center tw-justify-between tw-w-full'>
                     <Title level={4}>Chi tiết tồn kho</Title>

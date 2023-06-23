@@ -20,7 +20,8 @@ const Home = lazy(() => import('./layouts/Home'));
 const OrderDashboard = lazy(() => import('./pages/Orders'));
 const AdviseDashboard = lazy(() => import('./pages/Advise'));
 const ProductDashboard = lazy(() => import('./pages/Products'));
-
+// users
+const UsersPages = lazy(() => import('./pages/Users'));
 // Errors
 const _404 = lazy(() => import('./pages/Errors/_404'));
 
@@ -104,6 +105,10 @@ function App() {
                         <Route
                             path={ProtectedRoutes.Product.path}
                             element={<ProductDashboard />}
+                        />
+                        <Route
+                            path={ProtectedRoutes.Users.path}
+                            element={<UsersPages />}
                         />
                     </Route>
                 </Routes>

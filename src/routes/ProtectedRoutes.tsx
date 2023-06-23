@@ -14,12 +14,17 @@ const ProtectedRoutes = {
         parentId: 0,
         id: 2,
     },
-
+    Users: {
+        name: 'Khách hàng',
+        path: '/khach-hang',
+        parentId: 0,
+        id: 3,
+    },
     Advise: {
         name: 'Tư vấn khách hàng',
         path: '/tu-van',
         parentId: 0,
-        id: 3,
+        id: 4,
     },
 };
 
